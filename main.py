@@ -8,7 +8,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from my_utils import get_context
-
 from google import genai
 from google.genai import types
 
@@ -77,7 +76,6 @@ async def generate_text(request: ChatRequest):
         return {"response": response.text.strip()}
 
     except Exception as e:
-        print(f"Terjadi error: {e}")
         raise HTTPException(
             status_code=500, detail=f"Gagal menghasilkan teks: {str(e)}"
         )
@@ -86,9 +84,6 @@ async def generate_text(request: ChatRequest):
 @app.post("/generate-audio")
 async def generate_audio(request: TtsRequest):
     try:
-        print(f"Input text: '{request.text}'")
-        print(f"Text length: {len(request.text)}")
-
         # PERBAIKAN: Konfigurasi sama persis dengan notebook
         response = tts_client.models.generate_content(
             model=TTS_MODEL_ID,
@@ -109,13 +104,8 @@ async def generate_audio(request: TtsRequest):
             print(f"Content parts: {len(response.candidates[0].content.parts)}")
 
         audio_blob = response.candidates[0].content.parts[0].inline_data
-        print(f"Audio blob mime type: {audio_blob.mime_type}")
-
-        # PERBAIKAN: Akses data langsung seperti di notebook
-        # Cek apakah data sudah dalam format bytes atau masih base64
         if hasattr(audio_blob, "data"):
             if isinstance(audio_blob.data, str):
-                # Jika masih string base64, decode dulu
                 audio_data = base64.b64decode(audio_blob.data)
                 print(f"Base64 decoded data length: {len(audio_data)} bytes")
             else:
@@ -139,15 +129,7 @@ async def generate_audio(request: TtsRequest):
 
         wav_buffer.seek(0)
 
-        # Debug: save file untuk testing
-        with open("debug_output.wav", "wb") as f:
-            f.write(wav_buffer.getvalue())
-        print(
-            f"Saved debug_output.wav with size: {wav_buffer.getbuffer().nbytes} bytes"
-        )
-
         wav_content = wav_buffer.read()
-        print(f"WAV content size: {len(wav_content)} bytes")
 
         return Response(content=wav_content, media_type="audio/wav")
 
