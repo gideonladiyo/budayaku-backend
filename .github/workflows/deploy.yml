@@ -31,7 +31,7 @@ jobs:
 
             echo "🔒 Menandai folder git sebagai aman (jika belum)"
             if ! git config --global --get safe.directory | grep -q "/home/budayaku-backend"; then
-              git config --global --add safe.directory /home/CLO2_TB_KPL
+              git config --global --add safe.directory /home/budayaku-backend
             fi
             
             # Inisialisasi repo jika belum ada atau clone
