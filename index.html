@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Budayaku TTS Player</title>
+</head>
+
+<body>
+    <h1>Budayaku - TTS Generator</h1>
+
+    <textarea id="textInput" rows="6" cols="60" placeholder="Tulis teks di sini..."></textarea><br>
+    <button onclick="generateAndPlayAudio()">Putar Audio</button>
+
+    <h3>Audio:</h3>
+    <audio id="audioPlayer" controls></audio>
+
+    <script>
+        async function generateAndPlayAudio() {
+            const text = document.getElementById("textInput").value;
+            if (!text.trim()) {
+                alert("Teks tidak boleh kosong.");
+                return;
+            }
+
+            try {
+                const response = await fetch("http://127.0.0.1:8000/generate-audio", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        voice: "Sadaltager" // bisa kamu ganti
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error("Gagal mengambil audio dari server.");
+                }
+
+                const audioBlob = await response.blob(); // ambil audio sebagai blob
+                const audioUrl = URL.createObjectURL(audioBlob);
+
+                const audioPlayer = document.getElementById("audioPlayer");
+                audioPlayer.src = audioUrl;
+                audioPlayer.play();
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Terjadi kesalahan saat memutar audio.");
+            }
+        }
+    </script>
+</body>
+
+</html>
