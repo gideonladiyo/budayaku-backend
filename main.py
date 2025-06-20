@@ -39,7 +39,7 @@ app.add_middleware(
 # Schema untuk TTS
 class TtsRequest(BaseModel):
     text: str
-    voice: str = "Sadaltager"
+    voice: str = "Despina"
 
 
 # Schema untuk Chat
