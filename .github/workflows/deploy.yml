@@ -40,6 +40,7 @@ jobs:
               git clone https://github.com/${{ github.repository }}.git .
               git checkout main # Pastikan di branch main
               echo "${{ secrets.ENV_CONTENT }}" > .env
+              echo "${{ secrets.FIREBASE_KEY }}" > firebase_key.json
             else
               echo "📥 Pulling latest changes from main..."
               git fetch origin
