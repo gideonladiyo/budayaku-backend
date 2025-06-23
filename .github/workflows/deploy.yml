@@ -39,14 +39,15 @@ jobs:
               echo "Cloning repository..."
               git clone https://github.com/${{ github.repository }}.git .
               git checkout main # Pastikan di branch main
-              echo "${{ secrets.ENV_CONTENT }}" > .env
-              echo "${{ secrets.FIREBASE_KEY }}" > firebase_key.json
             else
               echo "📥 Pulling latest changes from main..."
               git fetch origin
               git reset --hard origin/main # Pastikan sinkron dengan remote main
               git pull origin main
             fi
+
+            echo "${{ secrets.ENV_CONTENT }}" > .env
+            echo "${{ secrets.FIREBASE_KEY_B64 }}" | base64 -d > firebase_key.json
 
             echo "🐳 Membangun dan menjalankan kontainer Docker"
 
