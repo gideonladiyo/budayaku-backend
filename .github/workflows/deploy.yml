@@ -47,7 +47,6 @@ jobs:
             fi
 
             echo "${{ secrets.ENV_CONTENT }}" > .env
-            echo "${{ secrets.FIREBASE_KEY_B64 }}" | tr -d '\r' | base64 -d > firebase_key.json
 
             echo "🐳 Membangun dan menjalankan kontainer Docker"
 
