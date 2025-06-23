@@ -2,7 +2,7 @@
 FROM python:3.11-slim
 
 # Tentukan direktori kerja di dalam container
-WORKDIR /app
+WORKDIR /budayaku-backend
 
 # Salin file requirements.txt dan instal dependensi
 COPY requirements.txt .
