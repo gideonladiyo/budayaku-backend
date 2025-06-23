@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 from fastapi.responses import Response
-from config import settings
+from config.config import settings
 from models import TtsRequest, ChatRequest
 from google import genai
 from my_utils import get_context
@@ -43,12 +43,11 @@ class GeminiService:
     
     def generate_audio(self, request: TtsRequest):
         try:
-            # PERBAIKAN: Konfigurasi sama persis dengan notebook
             response = self.tts_client.models.generate_content(
                 model=self.TTS_MODEL_ID,
                 contents=request.text,
                 config={
-                    "response_modalities": ["Audio"],  # Gunakan 'Audio' bukan "AUDIO"
+                    "response_modalities": ["Audio"],
                     "speech_config": {
                         "voice_config": {
                             "prebuilt_voice_config": {"voice_name": request.voice}
@@ -57,7 +56,6 @@ class GeminiService:
                 },
             )
 
-            # Debug response structure
             print(f"Response candidates: {len(response.candidates)}")
             if response.candidates:
                 print(f"Content parts: {len(response.candidates[0].content.parts)}")
@@ -68,23 +66,20 @@ class GeminiService:
                     audio_data = base64.b64decode(audio_blob.data)
                     print(f"Base64 decoded data length: {len(audio_data)} bytes")
                 else:
-                    # Jika sudah bytes, gunakan langsung
                     audio_data = audio_blob.data
                     print(f"Direct audio data length: {len(audio_data)} bytes")
             else:
                 raise Exception("Audio blob tidak memiliki data")
 
-            # Hitung durasi yang diharapkan
-            expected_duration = len(audio_data) / (24000 * 2)  # 24kHz, 16-bit
+            expected_duration = len(audio_data) / (24000 * 2)
             print(f"Expected duration: {expected_duration:.2f} seconds")
 
-            # Bungkus jadi WAV dengan parameter yang sama seperti notebook
             wav_buffer = io.BytesIO()
             with wave.open(wav_buffer, "wb") as wf:
-                wf.setnchannels(1)  # Mono
-                wf.setsampwidth(2)  # 16-bit (2 bytes)
-                wf.setframerate(24000)  # 24kHz sample rate
-                wf.writeframes(audio_data)  # Gunakan audio_data bukan pcm_data
+                wf.setnchannels(1)
+                wf.setsampwidth(2)
+                wf.setframerate(24000)
+                wf.writeframes(audio_data)
 
             wav_buffer.seek(0)
 
