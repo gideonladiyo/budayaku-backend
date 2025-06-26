@@ -14,6 +14,10 @@ class ChatRequest(BaseModel):
     province: str
     new_chat: str
 
+class ChatImageRequest(BaseModel):
+    prompt: str
+    province: str
+
 class CultureType(BaseModel):
     nama: str
     deskripsi: str

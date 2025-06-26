@@ -1,21 +1,28 @@
 from fastapi import HTTPException
-from fastapi.responses import Response
+from fastapi.responses import Response, JSONResponse
 from config.config import settings
-from models import TtsRequest, ChatRequest
+from models import TtsRequest, ChatRequest, ChatImageRequest
 from google import genai
-from my_utils import get_context
+from google.genai import types
+from my_utils import get_context, classifier_context
 import base64
 import wave
 import io
+from io import BytesIO
+from PIL import Image
 
 class GeminiService:
     def __init__(self):
         self.gemini_key = settings.google_api_key
-        self.LLM_MODEL_ID = "models/gemini-2.0-flash"
+        self.LLM_MODEL_ID = "gemini-2.0-flash"
         self.TTS_MODEL_ID = "gemini-2.5-flash-preview-tts"
+        self.LLM_CLASSIFIER_MODEL = "gemini-2.0-flash"
+        self.IMAGEN_MODEL = "gemini-2.0-flash-preview-image-generation"
         self.llm_client = genai.Client(api_key=self.gemini_key)
+        self.llm_classifier_client = genai.Client(api_key=self.gemini_key)
+        self.imagen_client = genai.Client(api_key=self.gemini_key)
         self.tts_client = genai.Client(api_key=self.gemini_key)
-        
+
     def generate_text(self, request: ChatRequest):
         try:
             konteks = get_context(request.province)
@@ -40,7 +47,7 @@ class GeminiService:
             raise HTTPException(
                 status_code=500, detail=f"Gagal menghasilkan teks: {str(e)}"
             )
-    
+
     def generate_audio(self, request: TtsRequest):
         try:
             response = self.tts_client.models.generate_content(
@@ -95,5 +102,45 @@ class GeminiService:
             raise HTTPException(
                 status_code=500, detail=f"Gagal menghasilkan audio: {str(e)}"
             )
+
+    def image_generator(self, request: ChatImageRequest):
+        classifier_prompt = classifier_context(
+            prompt=request.prompt,
+            nama_provinsi=request.province
+        )
+
+        classifier_resp = self.llm_classifier_client.models.generate_content(
+            model=self.LLM_MODEL_ID,
+            contents=classifier_prompt
+        )
+        answer = classifier_resp.text.strip().upper()
+
+        if not answer.startswith("YA"):
+            return JSONResponse(
+                content={"message": "Maaf, permintaan gambar di luar konteks budaya Indonesia."},
+                status_code=200
+            )
+
+        resp = self.imagen_client.models.generate_content(
+            model=self.IMAGEN_MODEL,
+            contents=request.prompt,
+            config=types.GenerateContentConfig(
+                response_modalities=["TEXT", "IMAGE"]
+            )
+        )
+
+        description = ""
+        image_b64 = ""
+
+        for part in resp.candidates[0].content.parts:
+            if getattr(part, "text", None):
+                description += part.text
+            elif getattr(part, "inline_data", None):
+                image_b64 = base64.b64encode(part.inline_data.data).decode()
+
+        return JSONResponse(
+            content={"description": description.strip(), "image_base64": image_b64},
+            status_code=200,
+        )
 
 gemini_service = GeminiService()

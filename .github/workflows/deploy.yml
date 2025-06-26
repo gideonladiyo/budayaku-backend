@@ -1,77 +1,77 @@
-name: Callable Deploy API
+# name: Callable Deploy API
 
-on:
-  push:
-    branches:
-      - main
+# on:
+#   push:
+#     branches:
+#       - main
 
-jobs:
-  deploy-api:
-    name: Deploy API to Production
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+# jobs:
+#   deploy-api:
+#     name: Deploy API to Production
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout Repository
+#         uses: actions/checkout@v4
 
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          password: ${{ secrets.SERVER_PASSWORD }}
-          port: 22
-          script: |
-            echo "✅ Terhubung ke server"
-            if [ ! -d "/home/gideonladiyo/budayaku-backend" ]; then
-              echo "📂 Direktori /home/gideonladiyo/budayaku-backend tidak ditemukan, membuat direktori..."
-              mkdir -p /home/gideonladiyo/budayaku-backend
-            fi
-            cd /home/gideonladiyo/budayaku-backend
-            echo "PWD: $(pwd)"
+#       - name: Deploy via SSH
+#         uses: appleboy/ssh-action@v1
+#         with:
+#           host: ${{ secrets.SERVER_HOST }}
+#           username: ${{ secrets.SERVER_USER }}
+#           password: ${{ secrets.SERVER_PASSWORD }}
+#           port: 22
+#           script: |
+#             echo "✅ Terhubung ke server"
+#             if [ ! -d "/home/gideonladiyo/budayaku-backend" ]; then
+#               echo "📂 Direktori /home/gideonladiyo/budayaku-backend tidak ditemukan, membuat direktori..."
+#               mkdir -p /home/gideonladiyo/budayaku-backend
+#             fi
+#             cd /home/gideonladiyo/budayaku-backend
+#             echo "PWD: $(pwd)"
 
-            echo "🔒 Menandai folder git sebagai aman (jika belum)"
-            if ! git config --global --get safe.directory | grep -q "/home/budayaku-backend"; then
-              git config --global --add safe.directory /home/budayaku-backend
-            fi
+#             echo "🔒 Menandai folder git sebagai aman (jika belum)"
+#             if ! git config --global --get safe.directory | grep -q "/home/budayaku-backend"; then
+#               git config --global --add safe.directory /home/budayaku-backend
+#             fi
             
-            # Inisialisasi repo jika belum ada atau clone
-            if [ ! -d ".git" ]; then
-              echo "Cloning repository..."
-              git clone https://github.com/${{ github.repository }}.git .
-              git checkout main # Pastikan di branch main
-            else
-              echo "📥 Pulling latest changes from main..."
-              git fetch origin
-              git reset --hard origin/main # Pastikan sinkron dengan remote main
-              git pull origin main
-            fi
+#             # Inisialisasi repo jika belum ada atau clone
+#             if [ ! -d ".git" ]; then
+#               echo "Cloning repository..."
+#               git clone https://github.com/${{ github.repository }}.git .
+#               git checkout main # Pastikan di branch main
+#             else
+#               echo "📥 Pulling latest changes from main..."
+#               git fetch origin
+#               git reset --hard origin/main # Pastikan sinkron dengan remote main
+#               git pull origin main
+#             fi
 
-            echo "${{ secrets.ENV_CONTENT }}" > .env
-            echo "${{ secrets.FIREBASE_KEY_B64 }}" | base64 -d > firebase_key.json
+#             echo "${{ secrets.ENV_CONTENT }}" > .env
+#             echo "${{ secrets.FIREBASE_KEY_B64 }}" | base64 -d > firebase_key.json
 
-            echo "🐳 Membangun dan menjalankan kontainer Docker"
+#             echo "🐳 Membangun dan menjalankan kontainer Docker"
 
-            if [ "$(docker ps -q -f name=budayaku-backend)" ]; then
-                echo "Stopping existing budayaku-backend container..."
-                docker stop budayaku-backend
-            fi
-            if [ "$(docker ps -aq -f name=budayaku-backend)" ]; then
-                echo "Removing existing budayaku-backend container..."
-                docker rm budayaku-backend
-            fi
+#             if [ "$(docker ps -q -f name=budayaku-backend)" ]; then
+#                 echo "Stopping existing budayaku-backend container..."
+#                 docker stop budayaku-backend
+#             fi
+#             if [ "$(docker ps -aq -f name=budayaku-backend)" ]; then
+#                 echo "Removing existing budayaku-backend container..."
+#                 docker rm budayaku-backend
+#             fi
 
-            echo "Building new Docker image: budayaku-backend"
-            docker build -t budayaku-backend .
+#             echo "Building new Docker image: budayaku-backend"
+#             docker build -t budayaku-backend .
             
-            echo "Running new Docker container: budayaku-backend"
-            docker run -d \
-              --name budayaku-backend \
-              --env-file .env \
-              -v /home/budayaku-backend/data:/app/data \
-              -p 5151:5151 \
-              --restart unless-stopped \
-              budayaku-backend
+#             echo "Running new Docker container: budayaku-backend"
+#             docker run -d \
+#               --name budayaku-backend \
+#               --env-file .env \
+#               -v /home/budayaku-backend/data:/app/data \
+#               -p 5151:5151 \
+#               --restart unless-stopped \
+#               budayaku-backend
             
-            echo "🚀 API berhasil dideploy"
-            echo "Listing running containers:"
-            docker ps -f name=budayaku-backend
+#             echo "🚀 API berhasil dideploy"
+#             echo "Listing running containers:"
+#             docker ps -f name=budayaku-backend

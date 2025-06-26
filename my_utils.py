@@ -15,3 +15,9 @@ def get_context(nama_provinsi: str):
     di bawah adalah percakapannya, kamu menjawab chat baru.
 
     """
+
+def classifier_context(prompt: str, nama_provinsi: str):
+    return f"""
+    Periksa apakah prompt di bawah adalah meminta generate gambar yang berkaitan dengan budaya indonesia dari daerah {nama_provinsi}? jawab YA/TIDAK. prompt:
+    {prompt}
+    """

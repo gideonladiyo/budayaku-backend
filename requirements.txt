@@ -5,3 +5,4 @@ google-generativeai
 google-genai
 pydantic_settings
 firebase_admin
+Pillow
