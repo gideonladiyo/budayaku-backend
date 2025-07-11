@@ -4,4 +4,4 @@ python-dotenv
 google-generativeai
 google-genai
 pydantic_settings
-supabase-py
+supabase
