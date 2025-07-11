@@ -1,13 +1,12 @@
 from fastapi import APIRouter
-from models import IslandCulture
-from services.firebase_service import firebase_serivce
+from services.province_service import province_service
 
 router = APIRouter(prefix="/budaya", tags=["Budaya"])
 
 @router.get("/")
 async def get_all():
-    return firebase_serivce.get_all_culture()
+    return province_service.get_all()
 
 @router.get("/{id}")
 async def get_by_id(id: str):
-    return firebase_serivce.get_culture_by_id(id)
+    return province_service.get_by_id(id)

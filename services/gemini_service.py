@@ -1,15 +1,16 @@
 from fastapi import HTTPException
 from fastapi.responses import Response, JSONResponse
 from config.config import settings
-from models import TtsRequest, ChatRequest, ChatImageRequest
+from models import TtsRequest, ChatRequest, ChatImageRequest, ChatImageTextRequest
 from google import genai
 from google.genai import types
-from my_utils import get_context, classifier_context
+from my_utils import get_context, classifier_context, return_genimage_context
 import base64
 import wave
 import io
 from io import BytesIO
 from PIL import Image
+
 
 class GeminiService:
     def __init__(self):
@@ -105,28 +106,26 @@ class GeminiService:
 
     def image_generator(self, request: ChatImageRequest):
         classifier_prompt = classifier_context(
-            prompt=request.prompt,
-            nama_provinsi=request.province
+            prompt=request.prompt, nama_provinsi=request.province
         )
 
         classifier_resp = self.llm_classifier_client.models.generate_content(
-            model=self.LLM_MODEL_ID,
-            contents=classifier_prompt
+            model=self.LLM_MODEL_ID, contents=classifier_prompt
         )
         answer = classifier_resp.text.strip().upper()
 
         if not answer.startswith("YA"):
             return JSONResponse(
-                content={"message": "Maaf, permintaan gambar di luar konteks budaya Indonesia."},
-                status_code=200
+                content={
+                    "message": "Maaf, permintaan gambar di luar konteks budaya Indonesia."
+                },
+                status_code=200,
             )
 
         resp = self.imagen_client.models.generate_content(
             model=self.IMAGEN_MODEL,
             contents=request.prompt,
-            config=types.GenerateContentConfig(
-                response_modalities=["TEXT", "IMAGE"]
-            )
+            config=types.GenerateContentConfig(response_modalities=["TEXT", "IMAGE"]),
         )
 
         description = ""
@@ -142,5 +141,83 @@ class GeminiService:
             content={"description": description.strip(), "image_base64": image_b64},
             status_code=200,
         )
+
+    def image_text_generator(self, request: ChatImageTextRequest):
+        try:
+            # Decode base64 image
+            try:
+                image_data = base64.b64decode(request.image_base64)
+            except Exception as e:
+                raise HTTPException(
+                    status_code=400, detail=f"Invalid base64 image data: {str(e)}"
+                )
+
+            # Validate image format
+            try:
+                img = Image.open(BytesIO(image_data))
+                img.verify()
+            except Exception as e:
+                raise HTTPException(
+                    status_code=400, detail=f"Invalid image format: {str(e)}"
+                )
+
+            # Detect image MIME type
+            img = Image.open(BytesIO(image_data))
+            format_to_mime = {
+                "JPEG": "image/jpeg",
+                "PNG": "image/png",
+                "WEBP": "image/webp",
+                "GIF": "image/gif",
+            }
+            mime_type = format_to_mime.get(img.format, "image/jpeg")
+
+            # Prepare content with image and text
+            content_parts = []
+
+            # Add image part
+            content_parts.append(
+                types.Part(inline_data=types.Blob(mime_type=mime_type, data=image_data))
+            )
+            prompt = return_genimage_context(request.province)
+
+            # Add text part
+            content_parts.append(types.Part(text=prompt))
+
+            # Generate content with image and text
+            response = self.imagen_client.models.generate_content(
+                model=self.IMAGEN_MODEL,
+                contents=[types.Content(parts=content_parts)],
+                config=types.GenerateContentConfig(
+                    response_modalities=["TEXT", "IMAGE"]
+                ),
+            )
+
+            description = ""
+            image_b64 = ""
+
+            # Process response
+            for part in response.candidates[0].content.parts:
+                if getattr(part, "text", None):
+                    description += part.text
+                elif getattr(part, "inline_data", None):
+                    image_b64 = base64.b64encode(part.inline_data.data).decode()
+
+            return JSONResponse(
+                content={"description": description.strip(), "image_base64": image_b64},
+                status_code=200,
+            )
+
+        except HTTPException:
+            raise
+        except Exception as e:
+            print(f"Error in image_text_generator: {e}")
+            import traceback
+
+            traceback.print_exc()
+            raise HTTPException(
+                status_code=500,
+                detail=f"Gagal menghasilkan gambar dengan teks: {str(e)}",
+            )
+
 
 gemini_service = GeminiService()

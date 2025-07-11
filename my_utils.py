@@ -21,3 +21,16 @@ def classifier_context(prompt: str, nama_provinsi: str):
     Periksa apakah prompt di bawah adalah meminta generate gambar yang berkaitan dengan budaya indonesia dari daerah {nama_provinsi}? jawab YA/TIDAK. prompt:
     {prompt}
     """
+
+
+def return_genimage_context(province):
+    return f"""
+    Buatlah sebuah animasi lucu berdasarkan gambar yang diunggah, dengan menggabungkan elemen budaya dari {province}. Animasi ini harus mempertahankan komposisi, gaya visual, dan nuansa gambar asli, namun disesuaikan dengan sentuhan budaya lokal.
+
+    Dalam animasi tersebut, tampilkan transformasi atau pergerakan yang memperlihatkan:
+    - Perubahan pakaian menjadi pakaian tradisional khas {province}
+    - Munculnya ornamen dan motif tradisional secara halus di pakaian atau latar
+    - Pergeseran warna ke palet yang mencerminkan budaya {province}
+    - Kemunculan arsitektur tradisional sebagai latar belakang atau elemen transisi
+    - Penambahan aksesori atau benda budaya khas, seperti senjata tradisional, perhiasan, atau alat musik
+    """
