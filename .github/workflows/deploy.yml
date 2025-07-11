@@ -22,16 +22,16 @@ jobs:
           port: 22
           script: |
             echo "✅ Terhubung ke server"
-            if [ ! -d "/home/gideonladiyo/budayaku-backend" ]; then
-              echo "📂 Direktori /home/gideonladiyo/budayaku-backend tidak ditemukan, membuat direktori..."
-              mkdir -p /home/gideonladiyo/budayaku-backend
+            if [ ! -d "$HOME/budayaku-backend" ]; then
+              echo "📂 Direktori $HOME/budayaku-backend tidak ditemukan, membuat direktori..."
+              mkdir -p $HOME/budayaku-backend
             fi
-            cd /home/gideonladiyo/budayaku-backend
+            cd $HOME/budayaku-backend
             echo "PWD: $(pwd)"
 
             echo "🔒 Menandai folder git sebagai aman (jika belum)"
-            if ! git config --global --get safe.directory | grep -q "/home/budayaku-backend"; then
-              git config --global --add safe.directory /home/budayaku-backend
+            if ! git config --global --get-all safe.directory | grep -q "$HOME/budayaku-backend"; then
+              git config --global --add safe.directory "$HOME/budayaku-backend"
             fi
             
             # Inisialisasi repo jika belum ada atau clone
@@ -46,7 +46,7 @@ jobs:
               git pull origin main
             fi
 
-            sudo chown $(whoami):$(whoami) .
+            chown $(whoami):$(whoami) .
 
             # echo "${{ secrets.ENV_BASE64 }}" | base64 -d > .env
             # cat .env || echo "❌ File .env gagal dibuat"
@@ -67,12 +67,11 @@ jobs:
             
             echo "Running new Docker container: budayaku-backend"
             docker run -d \
-              --name budayaku-backend \
-              --env-file .env \
-              -v /home/budayaku-backend/data:/app/data \
-              -p 5151:5151 \
-              --restart unless-stopped \
-              budayaku-backend
+            --name budayaku-backend \
+            --env-file .env \
+            -p 5151:5151 \
+            --restart unless-stopped \
+            budayaku-backend
             
             echo "🚀 API berhasil dideploy"
             echo "Listing running containers:"
