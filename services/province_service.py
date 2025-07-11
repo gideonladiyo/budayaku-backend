@@ -11,7 +11,7 @@ class ProvinceService:
 
     def get_all(self):
         supabase: Client = create_client(self.url, self.supabase_key)
-        response = supabase.table('budaya').select("*").execute()
+        response = supabase.table("budaya").select("*").order("id", desc=False).execute()
         return [self.map_budaya_model(row) for row in response.data]
 
     def get_by_id(self, id):
