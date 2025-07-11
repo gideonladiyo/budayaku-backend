@@ -45,7 +45,7 @@ jobs:
               git reset --hard origin/main # Pastikan sinkron dengan remote main
               git pull origin main
             fi
-
+ 
             echo "${{ secrets.ENV_CONTENT }}" > .env
 
             echo "🐳 Membangun dan menjalankan kontainer Docker"
