@@ -21,7 +21,9 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           port: 22
           script: |
+          
             echo "✅ Terhubung ke server"
+            sudo chown -R gideonladiyo:gideonladiyo /home/gideonladiyo
             if [ ! -d "$HOME/budayaku-backend" ]; then
               echo "📂 Direktori $HOME/budayaku-backend tidak ditemukan, membuat direktori..."
               mkdir -p $HOME/budayaku-backend
