@@ -46,6 +46,8 @@ jobs:
               git pull origin main
             fi
 
+            sudo chown $(whoami):$(whoami) .
+
             echo "${{ secrets.ENV_BASE64 }}" | base64 -d > .env
             cat .env || echo "❌ File .env gagal dibuat"
 
