@@ -7,6 +7,6 @@ router = APIRouter(prefix="/budaya", tags=["Budaya"])
 async def get_all():
     return province_service.get_all()
 
-@router.get("/{id}")
-async def get_by_id(id: str):
-    return province_service.get_by_id(id)
+@router.get("/{slug}")
+async def get_by_slug(slug: str):
+    return province_service.get_by_slug(slug)

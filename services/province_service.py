@@ -14,9 +14,9 @@ class ProvinceService:
         response = supabase.table("budaya").select("*").order("id", desc=False).execute()
         return [self.map_budaya_model(row) for row in response.data]
 
-    def get_by_id(self, id):
+    def get_by_slug(self, slug):
         supabase: Client = create_client(self.url, self.supabase_key)
-        response = supabase.table("budaya").select("*").eq("id", id).execute()
+        response = supabase.table("budaya").select("*").eq("slug", slug).execute()
         if not response.data:
             raise HTTPException(status_code=404, detail="Data tidak ditemukan")
         return self.map_budaya_model(response.data[0])
