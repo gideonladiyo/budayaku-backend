@@ -59,3 +59,4 @@ class BudayaModel(BaseModel):
     rumah_adat: RumahAdatModel
     pakaian_adat: PakaianAdatModel
     alat_musik: AlatMusikModel
+    url_image: str

@@ -41,6 +41,7 @@ class ProvinceService:
                 deskripsi_alat_musik=row["deskripsi_alat_musik"],
                 url_alat_musik=row["url_alat_musik"],
             ),
+            url_image=row["url_image"],
         )
 
 province_service = ProvinceService()
