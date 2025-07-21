@@ -7,7 +7,7 @@ from routes import budaya
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://budayaku-psi.vercel.app/"],
+    allow_origins=["https://budayaku-psi.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
