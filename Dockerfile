@@ -19,5 +19,5 @@ ENV PORT=8000
 # Expose port untuk dokumentasi (tidak wajib di Railway, tapi baik untuk eksplisit)
 EXPOSE 8000
 
-# Jalankan server FastAPI menggunakan Uvicorn
-CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT}"]
+# Jalankan server FastAPI menggunakan Uvicorn dengan proxy headers untuk Railway
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT} --proxy-headers --forwarded-allow-ips='*'"]
